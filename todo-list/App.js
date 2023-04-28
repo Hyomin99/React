@@ -16,7 +16,7 @@ export default function App() {
   } //실시간으로 바뀌는 글자
   
   return (
-    <View>
+    <View >
       <Text //맨 위 Todo List 글씨 처리
         style = {{
           fontSize : 30,
@@ -24,8 +24,8 @@ export default function App() {
           backgroundColor: 'skyblue',
           fontWeight : 900,
           fontFamily : 'System'
-        }}> Todo List </Text> 
-      
+        }}> Todo List {'\n'}  Edit : Click the Num {'\n'}Delete : Click the X </Text> 
+
       <TextInput //입력하는 텍스트 박스
         style = {styles.input}
         onChangeText = {onChangeText}
@@ -48,7 +48,6 @@ export default function App() {
             )
           } else {
               return (
-                <TouchableOpacity>
                 <Text style = {{    
                   fontSize:30,
                   backgroundColor: 'skyblue',
@@ -56,14 +55,18 @@ export default function App() {
                   color : 'black',
                   padding:5,
                   marginTop:5,
-                  fontFamily : 'System'}}>
-                {idx} - {item} </Text>
-                </TouchableOpacity>
+                  fontFamily : 'System'}}> <TouchableOpacity> {idx} </TouchableOpacity> - {item}
+                    <TouchableOpacity >
+                    <Text style = {{
+                      color : 'red'
+                    }}> X </Text>
+                    </TouchableOpacity> 
+                  </Text>
+              
               )
             }
         })}
       </ScrollView> 
-
     </View>
   );
 }
