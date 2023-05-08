@@ -1,83 +1,150 @@
-import {useState} from 'react';
-import { Text, View, StyleSheet, TextInput, ScrollView, Button, TouchableOpacity } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { useState } from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 
+const Stack = createStackNavigator();
 
 export default function App() {
+  const [text, setText] = useState(""); // 입력한 텍스트
+  const [storeText, setStoreText] = useState(["a"]); // 추가된 텍스트 배열
+  const [isSelect, setSelect] = useState(false);
+  const [editIndex, setEditIndex] = useState(false); // 수정할 텍스트의 인덱스
 
-  const [text, setText] = useState('') //내가 입력한 텍스트
-  const [storeText, setStoreText] = useState(['a']) // 추가하는 텍스트저장하는 용도
+  // 텍스트 추가
+  const addTextInput = () => {
+    
+    setStoreText([...storeText, text]);
+    setText("");
+  };
 
-  const AddTextInput = () => {
-    setStoreText([...storeText,text])
-  } // 썼던 텍스트 저장하기
+  // 텍스트 수정
+  const editTextInput = (newText) => {
+    // storeText를 복사한 후 인덱스 위치의 값을 변경
+    const newStoreText = [...storeText];
+    newStoreText[editIndex] = newText;
+    setStoreText(newStoreText);
 
-  const onChangeText = (event) =>{
-    setText(event)
-  } //실시간으로 바뀌는 글자
-  
+    // 수정 모드 종료
+    setEditIndex(false);
+    setText("");
+  };
+
+  // 텍스트 삭제
+  const taskDelete = (position) => {
+    const newArray = storeText.filter((num, index) => {
+      return position !== index;
+    });
+    setStoreText(newArray);
+  };
+
+  // 텍스트 선택 (수정 모드로 변경)
+  const selectTask = (idx) => {
+    setSelect(true);
+    setEditIndex(idx);
+    setText(storeText[idx]);
+  };
+
+  // 실시간으로 입력된 텍스트 저장
+  const onChangeText = (event) => {
+    setText(event);
+  };
+
   return (
-    <View >
-      <Text //맨 위 Todo List 글씨 처리
-        style = {{
-          fontSize : 30,
-          textAlign : 'center',
-          backgroundColor: 'skyblue',
-          fontWeight : 900,
-          fontFamily : 'System'
-        }}> Todo List {'\n'}  Edit : Click the Num {'\n'}Delete : Click the X </Text> 
+    <View style={styles.container}>
+      <Text style={styles.headerText}>
+        Todo List {"\n"} Edit : Click the Num {"\n"} Delete : Click the X
+      </Text>
 
-      <TextInput //입력하는 텍스트 박스
-        style = {styles.input}
-        onChangeText = {onChangeText}
-        value = {text}
-        placeholder = "Enter your to-do list."
-      /> 
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeText}
+        value={text}
+        placeholder="Enter your to-do list."
+      />
 
-      <Button // 일정 추가 버튼
-        title = 'Add'
-        color = 'black'
-        onPress = {AddTextInput}
-        /> 
+      {/* 수정 모드일 때만 보이는 버튼 */}
+      {isSelect && (
+        <Button
+          title="Edit"
+          color="red"
+          onPress={() => {editTextInput(text), setSelect(false)}}
+        />
+      )}
       
+      {/*수정할때는 왼쪽 옵션, 평소에는 오른쪽 옵션 */}
+      <Button 
+        title={isSelect ? 'Cancel' : 'Add'}
+        color={isSelect ? 'gray' : 'black'}
+        onPress={isSelect ? () => {setSelect(false), setText("")} : addTextInput}
+      />
 
-      <ScrollView>{/*추가한 텍스트들을 모아와서 차례대로 출력해주는 기능*/} 
-        {storeText.map((item,idx)=>{
+      <ScrollView>
+        {storeText.map((item, idx) => {
           if (idx === 0) {
-            return (
-              <Text> </Text>
-            )
+            return <Text key={idx}> </Text>;
           } else {
-              return (
-                <Text style = {{    
-                  fontSize:30,
-                  backgroundColor: 'skyblue',
-                  fontWeight : 500,
-                  color : 'black',
-                  padding:5,
-                  marginTop:5,
-                  fontFamily : 'System'}}> <TouchableOpacity> {idx} </TouchableOpacity> - {item}
-                    <TouchableOpacity >
-                    <Text style = {{
-                      color : 'red'
-                    }}> X </Text>
-                    </TouchableOpacity> 
-                  </Text>
-              
-              )
-            }
+            return (
+              <View key={idx}>
+                <Text style={styles.taskText}>
+                  <TouchableOpacity onPress={() => selectTask(idx)}>
+                    <Text style={styles.taskIndexText}> {idx} </Text>
+                  </TouchableOpacity>
+                  {"-"}
+                  {item}
+                  <TouchableOpacity onPress={() => taskDelete(idx)}>
+                    <Text style={styles.deleteText}> X </Text>
+                  </TouchableOpacity>
+                </Text>
+              </View>
+            );
+          }
         })}
-      </ScrollView> 
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  input : {
+  container: {
+    flex: 1,
+  },
+  headerText: {
+    fontSize: 30,
+    textAlign: "center",
+    backgroundColor: "skyblue",
+    fontWeight: "900",
+    fontFamily: "System",
+  },
+  input: {
     height: 40,
     margin: 12,
     borderWidth: 1,
     padding: 10,
-    
-  }
-})
+  },
+  taskText: {
+    fontSize: 30,
+    backgroundColor: 'skyblue',
+    fontWeight: '500',
+    color: 'black',
+    padding: 5,
+    marginTop: 5,
+    fontFamily: 'System',
+  },
+  taskIndexText: {
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  deleteText: {
+    color: 'red',
+  },
+});
 
